@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public float maxHP;
+    public float maxHP, maxMP;
     public List<Attribute> attributes;
 
 

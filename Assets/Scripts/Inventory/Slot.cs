@@ -12,8 +12,10 @@ public class Slot : MonoBehaviour
     public virtual void SetItem(ItemData data)
     {
         itemData = data;
-        itemIcon.sprite = data.icon;
-        InventoryManager.Instance.player.AddAttributes(data.attributes);
+
+        // Set the item icon
+        itemIcon.sprite = itemData.icon;
+        itemIcon.enabled = true; // Enable the item icon to display it
     }
 
     public virtual void RemoveItem()
