@@ -10,15 +10,19 @@ public class InventorySlot : MonoBehaviour
 
     public void SetItem(ItemData data)
     {
-        // TODO
         // Set the item data the and icons here
+        itemData = data;
+        itemIcon.enabled = true;
+        itemIcon.sprite = itemData.icon;
     }
 
     public void UseItem()
     {
         InventoryManager.Instance.UseItem(itemData);
-        // TODO
         // Reset the item data and the icons here
+        itemIcon.enabled = false;
+        itemIcon.sprite = null;
+        itemData = null;
     }
 
     public bool HasItem()

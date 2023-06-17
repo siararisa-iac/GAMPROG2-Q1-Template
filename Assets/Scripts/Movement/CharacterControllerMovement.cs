@@ -29,7 +29,7 @@ public class CharacterControllerMovement : MonoBehaviour
 
     private void Move()
     {
-        Vector3 moveDirection = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical")) * Time.deltaTime;
+        Vector3 moveDirection = (Input.GetAxis("Horizontal") * transform.right + Input.GetAxis("Vertical") * transform.forward) * Time.deltaTime;
         moveDirection += GetGravityAndJump();
         characterController.Move(moveDirection);
     }
@@ -50,4 +50,6 @@ public class CharacterControllerMovement : MonoBehaviour
         yVelocity += gravity * gravityScale * Time.deltaTime;
         return Vector3.up * yVelocity * Time.deltaTime;
     }
+
+    
 }

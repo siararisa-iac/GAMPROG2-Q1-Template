@@ -20,8 +20,25 @@ public class RaycastController : MonoBehaviour
         //TODO: Raycast
         //1. Perform a raycast originating from the gameobject's position towards its forward direction.
         //   Make sure that the raycast will only hit the layer specified in the layermask
-        //2. Check if the object hits any Interactable. If it does, show the interactionInfo and set its text
-        //   to the id of the Interactable hit. If it doesn't hit any Interactable, simply disable the text
-        //3. Make sure to interact with the Interactable only when the mouse button is pressed.
+        if(Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, raycastDistance, layerMask))
+        {
+            //2. Check if the object hits any Interactable. If it does, show the interactionInfo and set its text
+            //   to the id of the Interactable hit. If it doesn't hit any Interactable, simply disable the text
+            if(hit.collider.TryGetComponent<Interactable>(out Interactable interactable))
+            {
+                interactionInfo.gameObject.SetActive(true);
+                interactionInfo.text = interactable.id;
+                //3. Make sure to interact with the Interactable only when the mouse button is pressed.
+                if (Input.GetMouseButtonDown(0)) 
+                {
+                    interactable.Interact();
+                }
+            }
+       
+        }
+        else
+        {
+            interactionInfo.gameObject.SetActive(false);
+        }
     }
 }

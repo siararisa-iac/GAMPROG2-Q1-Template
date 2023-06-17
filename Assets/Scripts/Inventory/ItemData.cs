@@ -20,9 +20,13 @@ public enum ItemType
 
 public enum EquipmentSlotType
 {
-    None,
-    // TODO
     // Define other equipment slots here
+    None,
+    Head,
+    Body,
+    Boots,
+    MainWeapon,
+    SecondaryWeapon
 }
 
 [System.Serializable]
@@ -40,7 +44,12 @@ public class Attribute
 
 public enum AttributeType
 {
-    HP,
-    // TODO
     // Add other attribute types here
+    HP,
+    MP,
+    STR,
+    DEF,
+    INT,
+    AGI,
+    VIT,
 }

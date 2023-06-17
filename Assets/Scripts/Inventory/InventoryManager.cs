@@ -53,31 +53,70 @@ public class InventoryManager : MonoBehaviour
 
     public void UseItem(ItemData data)
     {
-        // TODO
         // If the item is a consumable, simply add the attributes of the item to the player.
-        // If it is equippable, get the equipment slot that matches the item's slot.
-        // Set the equipment slot's item as that of the used item
+        switch(data.type) 
+        {
+            case ItemType.Consumable:
+                player.AddAttributes(data.attributes);
+                break;
+            // If it is equippable, get the equipment slot that matches the item's slot.
+            case ItemType.Equipabble:
+                if (GetEquipmentSlotIndex(data.slotType) == -1) break;
+                // Set the equipment slot's item as that of the used item
+                equipmentSlots[GetEquipmentSlotIndex(data.slotType)].SetItem(data);
+                break;
+        }
     }
 
-   
-    public void AddItem(string itemID)
+    // This function returns a bool to inform whether the AddItem is successful or not
+    public bool AddItem(string itemID)
     {
-        //TODO
         //1. Cycle through every item in the database until you find the item with the same id.
-        //2. Get the index of the InventorySlot that does not have any Item and set its Item to the Item found
+        for(int i = 0; i < itemDatabase.Count; i++)
+        {
+            if (itemDatabase[i].id == itemID)
+            {
+                //2. Get the index of the InventorySlot that does not have any Item and set its Item to the Item found
+                // Check if there is an available slot before adding it
+                if (!GetEmptyInventorySlot()) return false;
+                GetEmptyInventorySlot().SetItem(itemDatabase[i]);
+
+                //if (GetEmptyInventorySlotIndex() == -1) return false;
+                //inventorySlots[GetEmptyInventorySlotIndex()].SetItem(itemDatabase[i]);
+            }
+        }
+        return true;
     }
 
-    public int GetEmptyInventorySlot()
+    public int GetEmptyInventorySlotIndex()
     {
-        //TODO
         //Check which inventory slot doesn't have an Item and return its index
+        for(int i = 0; i < inventorySlots.Count; i++) 
+        {
+            if (!inventorySlots[i].HasItem())
+                return i;
+        }
         return -1;
     }
 
-    public int GetEquipmentSlot(EquipmentSlotType type)
+    public InventorySlot GetEmptyInventorySlot()
     {
-        //TODO
+        for (int i = 0; i < inventorySlots.Count; i++)
+        {
+            if (!inventorySlots[i].HasItem())
+                return inventorySlots[i];
+        }
+        return null;
+    }
+
+    public int GetEquipmentSlotIndex(EquipmentSlotType type)
+    {
         //Check which equipment slot matches the slot type and return its index
+        for (int i = 0; i < equipmentSlots.Count; i++)
+        {
+            if (equipmentSlots[i].type == type)
+                return i;
+        }
         return -1;
     }
 }

@@ -6,7 +6,7 @@ public class CameraController : MonoBehaviour
 {
     [SerializeField]
     private GameObject target;
-
+    
     private float rotationX, rotationY;
 
     [SerializeField]
