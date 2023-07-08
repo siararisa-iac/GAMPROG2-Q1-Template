@@ -17,15 +17,31 @@ public class ThirdPersonMovement : MonoBehaviour
 
     [Header("Gravity")]
     [SerializeField] private float gravityScale = 1.0f;
+    [SerializeField] private LayerMask groundLayers;
+    [SerializeField] private float groundedOffset = -0.14f;
+    [SerializeField] private float groundedVelocity = -0.5f;
+    [SerializeField] private Transform groundPosition;
+    [SerializeField] private float groundedRadius;
+    public bool IsGrounded;
+
+    [Header("Jumping")]
+    [SerializeField] private float jumpHeight = 3.0f;
+    //time required before entering the fall state
+    [SerializeField] private float fallTimeout = 0.15f;
+
 
     [Header("Audio")]
     [SerializeField] private AudioClip stepSFX;
+    [SerializeField] private AudioClip landSFX;
 
     //Animation
     private Animator animator;
     private float movementBlend;
     private float currentSpeed;
     private int speedParam;
+    private int groundedParam;
+    private int jumpParam;
+    private int freeFallParam;
 
     //Movement variables
     private CharacterController characterController;
@@ -37,6 +53,7 @@ public class ThirdPersonMovement : MonoBehaviour
 
     //Audio variables
     private AudioSource audioSource;
+    private float yVelocity;
 
     // Start is called before the first frame update
     private void Start()
@@ -46,6 +63,9 @@ public class ThirdPersonMovement : MonoBehaviour
         {
             camera = Camera.main;
         }
+
+        //match the radius of the characterController
+        //groundedRadius = characterController.radius;
 
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
@@ -57,10 +77,15 @@ public class ThirdPersonMovement : MonoBehaviour
     {
         //Comparing integers is more optimized than comparing strings
         speedParam = Animator.StringToHash("speed");
+        groundedParam = Animator.StringToHash("grounded");
+        jumpParam = Animator.StringToHash("jump");
+        freeFallParam = Animator.StringToHash("freeFall");
     }
+
     // Update is called once per frame
     private void Update()
     {
+        CheckGrounded();
         Move();
     }
 
@@ -102,11 +127,6 @@ public class ThirdPersonMovement : MonoBehaviour
             Time.deltaTime * speedChangeRate);
         if(movementBlend < 0.01f) movementBlend = 0f;
 
-
-
-
-
-
         // Make the character move
         if (movementInput.magnitude >= 0.1f)
         {
@@ -120,17 +140,79 @@ public class ThirdPersonMovement : MonoBehaviour
             transform.rotation = Quaternion.Euler(0, currentAngle, 0);
             targetDirection = Quaternion.Euler(0, targetAngle, 0)
                 * Vector3.forward;
-            targetDirection.y += gravity * gravityScale;
         }
 
         animator.SetFloat(speedParam, movementBlend);
         characterController.Move(targetDirection *
-               currentSpeed * Time.deltaTime);
+               (currentSpeed * Time.deltaTime) + GetVelocityY());
     }
+
+    private float fallTimeoutDelta;
+   
+
+    private Vector3 GetVelocityY()
+    {
+        if(IsGrounded)
+        {
+            //Reset the fall timer
+            fallTimeoutDelta = fallTimeout;
+            //Ensure that the character is kept on ground
+            if (yVelocity < 0.0f)
+            {
+                yVelocity = groundedVelocity;
+            }
+
+            animator.SetBool(jumpParam, false);
+            animator.SetBool(freeFallParam, false);
+
+            //Check if we press jump
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                //Calculate the velocity given the height
+                //Get the velocity needed to reach the desired height sqrt H * -2 * gravity
+                yVelocity = Mathf.Sqrt(jumpHeight * -2.0f * gravity);
+                animator.SetBool(jumpParam, true);
+            }
+        }
+        else
+        {
+            // Check if we can free fall
+            if(fallTimeoutDelta >= 0.0f)
+            {
+                fallTimeoutDelta -= Time.deltaTime;
+            }
+            else
+            {
+                animator.SetBool(freeFallParam, true);
+            }
+        }
+
+        //Always apply gravitational force
+        yVelocity += gravity * gravityScale * Time.deltaTime;
+        return Vector3.up* yVelocity * Time.deltaTime;
+    }
+
+    private void CheckGrounded()
+    {
+        //set up spherePosition for the physics
+        //Vector3 spherePosition = new Vector3(groundPosition.transform.position.x,
+        //    groundPosition.transform.position.y);
+        IsGrounded = Physics.CheckSphere(groundPosition.transform.position,
+            groundedRadius, groundLayers);
+
+        animator.SetBool(groundedParam, IsGrounded);
+    }
+
 
     public void OnFootstep()
     {
         audioSource.clip = stepSFX; 
+        audioSource.Play();
+    }
+
+    public void OnLand()
+    {
+        audioSource.clip = landSFX;
         audioSource.Play();
     }
 }
